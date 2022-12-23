@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  dynamic-origins
+
+  Sample SAM Template for dynamic-origins
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 1
+
+Parameters:
+  Stage:
+    Type: String
+    AllowedValues:
+      - staging
+      - production
+    Default: staging
+    Description: Stage that can be added to resource names
+  ProjectName:
+    Type: String
+
+Resources:
+  fnViewerRequest:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ProjectName}-fnViewerRequest-${Stage}
+      Role: !GetAtt roleViewerRequest.Arn
+      Runtime: nodejs12.x
+      Handler: lambda/viewer_request.handler
+      Timeout: 5
+      AutoPublishAlias: live 
+
+  roleViewerRequest:
+      Type: "AWS::IAM::Role"
+      Properties:
+        Path: "/"
+        ManagedPolicyArns:
+          - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Sid: "AllowLambdaServiceToAssumeRole"
+              Effect: "Allow"
+              Action: 
+                - "sts:AssumeRole"
+              Principal:
+                Service: 
+                  - "lambda.amazonaws.com"
+                  - "edgelambda.amazonaws.com"
+  
+  fnOriginRequest:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri:
+      FunctionName: !Sub ${ProjectName}-fnOriginRequest-${Stage}
+      Role: !GetAtt roleOriginRequest.Arn
+      Runtime: nodejs12.x
+      Handler: lambda/origin_request.handler
+      Timeout: 5
+      AutoPublishAlias: live 
+
+  roleOriginRequest:
+      Type: "AWS::IAM::Role"
+      Properties:
+        Path: "/"
+        ManagedPolicyArns:
+          - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Sid: "AllowLambdaServiceToAssumeRole"
+              Effect: "Allow"
+              Action: 
+                - "sts:AssumeRole"
+              Principal:
+                Service: 
+                  - "lambda.amazonaws.com"
+                  - "edgelambda.amazonaws.com"
+
+
+  fnOriginResponse:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri:
+      FunctionName: !Sub ${ProjectName}-fnOriginResponse-${Stage} 
+      Role: !GetAtt roleOriginResponse.Arn
+      Runtime: nodejs12.x
+      Handler: lambda/origin_response.handler
+      Timeout: 1
+      AutoPublishAlias: live 
+
+  roleOriginResponse:
+      Type: "AWS::IAM::Role"
+      Properties:
+        Path: "/"
+        ManagedPolicyArns:
+          - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Sid: "AllowLambdaServiceToAssumeRole"
+              Effect: "Allow"
+              Action: 
+                - "sts:AssumeRole"
+              Principal:
+                Service: 
+                  - "lambda.amazonaws.com"
+                  - "edgelambda.amazonaws.com"
+                    # sns topics that the lambdas depend on
+  snsCloudfrontDynamicSecurity:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${ProjectName}-snsCloudfrontDynamicSecurity-${Stage}
+
+  # sqs queues that the lambdas use
+  #sqsCloudfrontDynamicSecurity:
+  #  Type: AWS::SQS::Queue
+
+  #sqsCloudfrontDynamicSecurityPolicy:
+  #  Type: AWS::SQS::QueuePolicy
+  #  Properties:
+  #    Queues:
+  #      - !Ref sqsCloudfrontDynamicSecurity
+  #    PolicyDocument:
+  #      Statement:
+  #        Effect: Allow
+  #        Principal: "*"
+  #        Action: "sqs:*"
+  #        Resource: "*"
+
+  #sqsCloudfrontDYnamicSecuritySubscription:
+  #  Type: AWS::SNS::Subscription
+  #  Properties:
+  #    Endpoint: !GetAtt
+  #      - sqsCloudfrontDynamicSecurity
+  #      - Arn
+  #    Protocol: sqs
+  #    RawMessageDelivery: true
+  #    TopicArn: !Ref snsCloudfrontDynamicSecurity

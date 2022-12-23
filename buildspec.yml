@@ -1,0 +1,28 @@
+version: 0.2
+env:
+  parameter-store:
+    PROJECT_NAME: "/mejuri-dynamic-origins/all-envs/PROJECT_NAME"
+    REGION: "/mejuri-dynamic-origins/all-envs/REGION"
+    S3_BUCKET: "/mejuri-dynamic-origins/all-envs/S3_BUCKET"
+    DISTRIBUTION_STAGING: "/mejuri-dynamic-origins/all-envs/DISTRIBUTION_STAGING"
+    DISTRIBUTION_PRODUCTION: "/mejuri-dynamic-origins/all-envs/DISTRIBUTION_PRODUCTION"
+    DISTRIBUTION_BEHAVIORS_STAGING: "/mejuri-dynamic-origins/all-envs/DISTRIBUTION_BEHAVIORS_STAGING" 
+    DISTRIBUTION_BEHAVIORS_PRODUCTION: "/mejuri-dynamic-origins/all-envs/DISTRIBUTION_BEHAVIORS_PRODUCTION"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 12
+    commands:
+      - chmod -R +x ./.ci
+      - . ./.ci/scripts/phase-install.sh
+  pre_build:
+    commands:
+      - apt-get install jq
+      - . ./.ci/scripts/phase-prebuild.sh
+  build:
+    commands:
+      - . ./.ci/scripts/phase-build.sh
+  post_build:
+    commands:
+      - . ./.ci/scripts/phase-postbuild.sh

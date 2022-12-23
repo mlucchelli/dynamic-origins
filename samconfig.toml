@@ -1,0 +1,12 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "edge-dynamic-origin-dev"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1lyq3v40w2obr"
+s3_prefix = "edge-dynamic-origin-dev"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Stage=\"staging\""
+
