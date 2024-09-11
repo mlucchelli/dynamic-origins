@@ -1,11 +1,4 @@
-      _              ____  
-     | |            / __ \ 
-   __| |_   _ _ __ | |  | |
-  / _` | | | | '_ \| |  | |
- | (_| | |_| | | | | |__| |
-  \__,_|\__, |_| |_|\____/ 
-         __/ |             
-        |___/              
+       
 
 This serverless projects can change the origin for behaviours on your CDN
 
